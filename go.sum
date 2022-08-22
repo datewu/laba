@@ -1,5 +1,5 @@
-github.com/datewu/gtea v0.2.2 h1:E5O0aKFDphTPo7TJZmbAkK4ztb2IipjEFQ+MGpsAzKo=
-github.com/datewu/gtea v0.2.2/go.mod h1:9ZF/VeCwDKIN4TneyGmHITYYWi6ExYJgYGpTZfBbD3I=
+github.com/datewu/gtea v0.2.3 h1:41c7faz+9oZIFt9S1pWjoVp7duvYrTaEQTec5PUsWKs=
+github.com/datewu/gtea v0.2.3/go.mod h1:9ZF/VeCwDKIN4TneyGmHITYYWi6ExYJgYGpTZfBbD3I=
 golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 h1:GIAS/yBem/gq2MUqgNIzUHW7cJMmx3TGZOrnyYaNQ6c=
 golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8/go.mod h1:IxCIyHEi3zRg3s0A5j5BB6A9Jmi73HwBIUl50j+osU4=
 golang.org/x/sys v0.0.0-20220818161305-2296e01440c6 h1:Sx/u41w+OwrInGdEckYmEuU5gHoGSL4QbDz3S9s6j4U=
