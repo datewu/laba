@@ -10,11 +10,10 @@ import (
 )
 
 func TestAll(t *testing.T) {
-	// privateKey, err := os.ReadFile(os.Getenv("HOME") + "/.ssh/tx-me")
 	if utils.InGithubCI() {
 		return
 	}
-	privateKey, err := os.ReadFile(os.Getenv("HOME") + "/.ssh/xqing")
+	privateKey, err := os.ReadFile(os.Getenv("HOME") + "/.ssh/tx-me")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,9 +21,8 @@ func TestAll(t *testing.T) {
 		PEMPrivateKey: privateKey,
 	}
 	host := &sshc.Target{
-		// IP:   "9.135.140.60",
-		// Port: 36000,
-		IP: "192.168.1.202",
+		IP:   "9.135.140.60",
+		Port: 36000,
 	}
 	err = host.Connect(cred)
 	if err != nil {
@@ -34,9 +32,10 @@ func TestAll(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		go func(n int) {
 			cmd := sshc.Cmd{
-				Command: fmt.Sprintf("echo %d seesion run && sleep %d && echo 'go(%d) exit'", n, n%5, n),
-				Out:     os.Stdout,
-				Errout:  os.Stderr,
+				Command: fmt.Sprintf(`echo '%d seesion run: going to sleep %ds' &&
+				 sleep %d && echo 'go(%d) exit'`, n, n%5, n%5, n),
+				Out:    os.Stdout,
+				Errout: os.Stderr,
 			}
 			host.Run(cmd)
 		}(i)
