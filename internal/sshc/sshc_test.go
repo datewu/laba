@@ -3,6 +3,7 @@ package sshc_test
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/datewu/gtea/utils"
@@ -13,15 +14,13 @@ func TestAll(t *testing.T) {
 	if utils.InGithubCI() {
 		return
 	}
-	privateKey, err := os.ReadFile(os.Getenv("HOME") + "/.ssh/tx-me")
+	fn := filepath.Join(os.Getenv("HOME"), ".ssh/id_rsa")
+	cred, err := sshc.NewCredentialWithKeyfile("", fn, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	cred := &sshc.Credential{
-		PEMPrivateKey: privateKey,
-	}
 	host := &sshc.Target{
-		IP:   "9.135.140.60",
+		Addr: "node1",
 		Port: 36000,
 	}
 	err = host.Connect(cred)

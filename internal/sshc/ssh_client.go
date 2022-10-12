@@ -8,12 +8,14 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// ErrEmptyCredential ...
-var ErrEmptyCredential = errors.New("no password nor private key provided")
+// ErrEmptyClient ...
+var (
+	ErrEmptyClient = errors.New("no client connect")
+)
 
 // Target reprenet a ssh server
 type Target struct {
-	IP     string
+	Addr   string // IP or hostname
 	Port   int
 	client *ssh.Client
 }
@@ -24,12 +26,12 @@ func (t *Target) Connect(c *Credential) error {
 		t.Port = 22
 	}
 	if c.conf == nil {
-		err := c.Init()
+		err := c.init()
 		if err != nil {
 			return err
 		}
 	}
-	addr := fmt.Sprintf("%s:%d", t.IP, t.Port)
+	addr := fmt.Sprintf("%s:%d", t.Addr, t.Port)
 	client, err := ssh.Dial("tcp", addr, c.conf)
 	if err != nil {
 		return err
@@ -51,8 +53,11 @@ type Cmd struct {
 
 // Run commands
 func (t *Target) Run(c Cmd) error {
-	// // Each ClientConn can support multiple interactive sessions,
-	// // represented by a Session.
+	if t.client == nil {
+		return ErrEmptyClient
+	}
+	// Each ClientConn can support multiple interactive sessions,
+	// represented by a Session.
 	session, err := t.client.NewSession()
 	if err != nil {
 		return err
@@ -67,51 +72,5 @@ func (t *Target) Run(c Cmd) error {
 		return err
 	}
 	// return session.Wait()
-	return nil
-}
-
-// Credential use pwd or private key
-type Credential struct {
-	Username, Pwd string
-	PEMPrivateKey []byte
-	PrivateKeyPwd []byte
-	conf          *ssh.ClientConfig
-}
-
-func (c *Credential) Init() error {
-	// var hostKey ssh.PublicKey
-	if c.Pwd == "" && c.PEMPrivateKey == nil {
-		return ErrEmptyCredential
-	}
-	if c.Username == "" {
-		c.Username = "root"
-	}
-	conf := &ssh.ClientConfig{
-		User: c.Username,
-		// HostKeyCallback: ssh.FixedHostKey(hostKey),
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-	if c.Pwd != "" {
-		auth := ssh.Password(c.Pwd)
-		conf.Auth = append(conf.Auth, auth)
-		c.conf = conf
-		return nil // use pwd, ignore Privatekey
-	}
-	if c.PEMPrivateKey != nil {
-		var signer ssh.Signer
-		var err error
-		if c.PrivateKeyPwd == nil {
-			signer, err = ssh.ParsePrivateKey(c.PEMPrivateKey)
-		} else {
-			signer, err = ssh.ParsePrivateKeyWithPassphrase(
-				c.PEMPrivateKey, c.PrivateKeyPwd)
-		}
-		if err != nil {
-			return err
-		}
-		auth := ssh.PublicKeys(signer)
-		conf.Auth = append(conf.Auth, auth)
-	}
-	c.conf = conf
 	return nil
 }
