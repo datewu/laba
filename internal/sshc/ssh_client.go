@@ -15,30 +15,34 @@ var (
 
 // Target reprenet a ssh server
 type Target struct {
-	Addr   string // IP or hostname
-	Port   int
+	Addr string // IP or hostname
+	Port int
+	Credential
 	client *ssh.Client
 }
 
+// NewTarget ...
+func NewTarget(addr string, port int, c Credential) *Target {
+	t := &Target{Addr: addr, Port: port}
+	t.Credential = c
+	return t
+}
+
 // Connect to target, should call Close afterwards
-func (t *Target) Connect(c *Credential) error {
+func (t *Target) Connect() error {
 	if t.Port == 0 {
 		t.Port = 22
 	}
-	if c.conf == nil {
-		err := c.init()
-		if err != nil {
-			return err
-		}
+	if t.Credential.conf == nil {
+		return ErrEmptyCredential
 	}
 	addr := fmt.Sprintf("%s:%d", t.Addr, t.Port)
-	client, err := ssh.Dial("tcp", addr, c.conf)
+	client, err := ssh.Dial("tcp", addr, t.Credential.conf)
 	if err != nil {
 		return err
 	}
 	t.client = client
 	return nil
-
 }
 
 // Close connection
@@ -51,21 +55,16 @@ type Cmd struct {
 	Out, Errout io.Writer
 }
 
-// Run commands
+// Run each clientConn can support multiple interactive sessions.
 func (t *Target) Run(c Cmd) error {
 	if t.client == nil {
 		return ErrEmptyClient
 	}
-	// Each ClientConn can support multiple interactive sessions,
-	// represented by a Session.
 	session, err := t.client.NewSession()
 	if err != nil {
 		return err
 	}
 	defer session.Close()
-
-	// Once a Session is created, you can execute a single command on
-	// the remote side using the Run method.
 	session.Stdout = c.Out
 	session.Stderr = c.Errout
 	if err := session.Run(c.Command); err != nil {

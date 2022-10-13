@@ -19,11 +19,8 @@ func TestAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	host := &sshc.Target{
-		Addr: "node1",
-		Port: 36000,
-	}
-	err = host.Connect(cred)
+	host := sshc.NewTarget("node1", 36000, *cred)
+	err = host.Connect()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,8 +28,8 @@ func TestAll(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		go func(n int) {
 			cmd := sshc.Cmd{
-				Command: fmt.Sprintf(`echo '%d seesion run: going to sleep %ds' &&
-				 sleep %d && echo 'go(%d) exit'`, n, n%5, n%5, n),
+				Command: fmt.Sprintf(`echo '%d seesion run: sleep %ds' &&
+				 sleep %d && date && echo 'go(%d) exit'`, n, n%5, n%5, n),
 				Out:    os.Stdout,
 				Errout: os.Stderr,
 			}
